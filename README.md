@@ -3,9 +3,9 @@
 ## Overview
 
 This microservice provides **search functionality** that can be used by any main program.  
-It exposes a single HTTP endpoint that performs **case-insensitive, partial-match search** over a predefined list of items.
+It exposes a single HTTP endpoint that performs case-insensitive and partial-match search over a predefined list of items.
 
-In my portfolio project, it is used to suggest restaurants based on what the user types into a search bar, but it is designed to be generic so that any teammate could call it from their own application.
+In my portfolio project, it is used to suggest restaurants based on what the user types into a search bar, but it is designed to be generic so that any teammate could call it from their own web app.
 
 The service returns items with:
 
