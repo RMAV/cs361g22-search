@@ -6,6 +6,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Health check endpoints
+app.get("/", (req, res) => {
+  res.json({ status: "ok", service: "cs361g22-search" });
+});
+
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    service: "cs361g22-search",
+    uptime: process.uptime(),
+    timestamp: Date.now()
+  });
+});
+
 // GET /search
 app.get("/search", (req, res) => {
   try {
