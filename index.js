@@ -1,10 +1,42 @@
 import express from "express";
 import cors from "cors";
-import { items } from "./items.js";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// MongoDB Connection
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/homeviu';
+
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('[Search Service] Connected to MongoDB'))
+  .catch(err => {
+    console.error('[Search Service] MongoDB connection error:', err.message);
+    process.exit(1);
+  });
+
+// Item Schema - matching your main Item model
+const itemSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  location: { type: String, required: true },
+  room: String,
+  category: String,
+  quantity: Number,
+  notes: String,
+  status: String,
+  value: Number,
+  description: String,
+  userId: { type: String, required: true, index: true },
+  dateAdded: Date,
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const Item = mongoose.model('Item', itemSchema);
 
 // Health check endpoints
 app.get("/", (req, res) => {
@@ -21,9 +53,11 @@ app.get("/health", (req, res) => {
 });
 
 // GET /search
-app.get("/search", (req, res) => {
+app.get("/search", async (req, res) => {
   try {
     let q = req.query.query ?? "";
+    const userId = req.query.userId || req.headers['x-user-id'];
+    
     q = q.toLowerCase().trim();
 
     // If empty query then return empty list and not error
@@ -36,16 +70,42 @@ app.get("/search", (req, res) => {
       });
     }
 
-    const results = items.filter(item =>
-      item.name.toLowerCase().includes(q) ||
-      item.location.toLowerCase().includes(q)
-    );
+    // Build filter for user's items
+    const filter = userId ? { userId } : {};
+    
+    // Search by name, location, room, category, or description
+    const searchFilter = {
+      ...filter,
+      $or: [
+        { name: { $regex: q, $options: 'i' } },
+        { location: { $regex: q, $options: 'i' } },
+        { room: { $regex: q, $options: 'i' } },
+        { category: { $regex: q, $options: 'i' } },
+        { description: { $regex: q, $options: 'i' } }
+      ]
+    };
+
+    const results = await Item.find(searchFilter)
+      .select('_id name location room category description')
+      .limit(10)
+      .lean();
+
+    // Map _id to id for frontend compatibility
+    const formattedResults = results.map(item => ({
+      id: item._id.toString(),
+      _id: item._id.toString(),
+      name: item.name,
+      location: item.location,
+      room: item.room,
+      category: item.category,
+      description: item.description
+    }));
 
     return res.json({
       status: "success",
       query: q,
-      count: results.length,
-      results
+      count: formattedResults.length,
+      results: formattedResults
     });
 
   } catch (err) {
