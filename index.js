@@ -12,11 +12,13 @@ app.use(express.json());
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/homeviu';
 
+console.log('[Search Service] Connecting to MongoDB...');
+mongoose.set("strictQuery", true);
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('[Search Service] Connected to MongoDB'))
   .catch(err => {
     console.error('[Search Service] MongoDB connection error:', err.message);
-    process.exit(1);
+    console.error('[Search Service] Full error:', err);
   });
 
 // Item Schema - matching your main Item model
