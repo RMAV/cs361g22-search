@@ -84,6 +84,12 @@ app.get("/search", async (req, res) => {
     
     console.log('[Search Service] Base filter:', JSON.stringify(filter));
     
+    // DEBUG: Check total items in database
+    const totalItems = await Item.countDocuments({});
+    const userItems = await Item.countDocuments({ userId });
+    console.log('[Search Service] Total items in DB:', totalItems);
+    console.log('[Search Service] Items for this user:', userItems);
+    
     // Search by name, location, room, category, or description
     const searchFilter = {
       ...filter,
