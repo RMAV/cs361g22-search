@@ -90,6 +90,11 @@ app.get("/search", async (req, res) => {
     console.log('[Search Service] Total items in DB:', totalItems);
     console.log('[Search Service] Items for this user:', userItems);
     
+    // DEBUG: Show what userIds exist in database
+    const uniqueUserIds = await Item.distinct('userId');
+    console.log('[Search Service] Unique userIds in DB:', uniqueUserIds);
+    console.log('[Search Service] Looking for userId:', userId, 'Type:', typeof userId);
+    
     // Search by name, location, room, category, or description
     const searchFilter = {
       ...filter,
