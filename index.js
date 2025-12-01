@@ -65,9 +65,6 @@ app.get("/search", async (req, res) => {
     const userId = req.query.userId || req.headers['x-user-id'];
     
     q = q.toLowerCase().trim();
-    
-    console.log('[Search Service] Query:', q);
-    console.log('[Search Service] UserId:', userId);
 
     // If empty query then return empty list and not error
     if (!q) {
@@ -82,19 +79,6 @@ app.get("/search", async (req, res) => {
     // Build filter for user's items
     const filter = userId ? { userId } : {};
     
-    console.log('[Search Service] Base filter:', JSON.stringify(filter));
-    
-    // DEBUG: Check total items in database
-    const totalItems = await Item.countDocuments({});
-    const userItems = await Item.countDocuments({ userId });
-    console.log('[Search Service] Total items in DB:', totalItems);
-    console.log('[Search Service] Items for this user:', userItems);
-    
-    // DEBUG: Show what userIds exist in database
-    const uniqueUserIds = await Item.distinct('userId');
-    console.log('[Search Service] Unique userIds in DB:', uniqueUserIds);
-    console.log('[Search Service] Looking for userId:', userId, 'Type:', typeof userId);
-    
     // Search by name, location, room, category, or description
     const searchFilter = {
       ...filter,
@@ -106,15 +90,11 @@ app.get("/search", async (req, res) => {
         { description: { $regex: q, $options: 'i' } }
       ]
     };
-    
-    console.log('[Search Service] Search filter:', JSON.stringify(searchFilter));
 
     const results = await Item.find(searchFilter)
       .select('_id name location room category description')
       .limit(10)
       .lean();
-      
-    console.log('[Search Service] Results count:', results.length);
 
     // Map _id to id for frontend compatibility
     const formattedResults = results.map(item => ({
