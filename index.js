@@ -6,7 +6,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "*"
+  })
+);
 app.use(express.json());
 
 // MongoDB Connection
@@ -120,6 +124,7 @@ app.get("/search", async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log("Search microservice running on port 3000");
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`[Search Service] Listening on port ${PORT}`);
 });
