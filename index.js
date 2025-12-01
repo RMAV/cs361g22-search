@@ -65,6 +65,9 @@ app.get("/search", async (req, res) => {
     const userId = req.query.userId || req.headers['x-user-id'];
     
     q = q.toLowerCase().trim();
+    
+    console.log('[Search Service] Query:', q);
+    console.log('[Search Service] UserId:', userId);
 
     // If empty query then return empty list and not error
     if (!q) {
@@ -79,6 +82,8 @@ app.get("/search", async (req, res) => {
     // Build filter for user's items
     const filter = userId ? { userId } : {};
     
+    console.log('[Search Service] Base filter:', JSON.stringify(filter));
+    
     // Search by name, location, room, category, or description
     const searchFilter = {
       ...filter,
@@ -90,11 +95,15 @@ app.get("/search", async (req, res) => {
         { description: { $regex: q, $options: 'i' } }
       ]
     };
+    
+    console.log('[Search Service] Search filter:', JSON.stringify(searchFilter));
 
     const results = await Item.find(searchFilter)
       .select('_id name location room category description')
       .limit(10)
       .lean();
+      
+    console.log('[Search Service] Results count:', results.length);
 
     // Map _id to id for frontend compatibility
     const formattedResults = results.map(item => ({
