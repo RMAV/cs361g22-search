@@ -1,11 +1,13 @@
 import express from "express";
 import cors from "cors";
+import morgan from "morgan";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 const app = express();
+app.use(morgan('combined'));
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "*"
